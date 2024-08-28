@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Candidate List</h2>
+
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<style>
+    .slider-labels {
+        display: flex;
+        justify-content: space-between;
+        margin: 10px 0;
+    }
+    .slider-label {
+        font-size: 12px;
+        color: #000;
+    }
+    </style>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+<form method="get" action="{% url 'search-candidates' %}">
+    <input type="text" name="search" placeholder="Search by name, email, or phone number" value="{{ request.GET.search }}">
+    <br>
+    <br>
+    <input type="text" name="name" placeholder="Name" value="{{ request.GET.name }}">
+    <input type="text" name="email" placeholder="Email" value="{{ request.GET.email }}">
+    <input type="text" name="phone_number" placeholder="Phone Number" value="{{ request.GET.phone_number }}">
+    <br>
+    <div id="age-slider"></div>
+    <input type="hidden" id="age_min" name="age_min">
+    <input type="hidden" id="age_max" name="age_max">
+    <div class="slider-labels">
+        <span class="slider-label" id="min-label">0</span>
+        <span class="slider-label" id="max-label">1</span>
+    </div>
+    <input type="number" name="years_of_exp_min" placeholder="Min Years of Experience" value="{{ request.GET.years_of_exp_min }}">
+    <input type="number" name="expected_salary_min" placeholder="Min Salary" value="{{ request.GET.expected_salary_min }}">
+    <input type="number" name="expected_salary_max" placeholder="Max Salary" value="{{ request.GET.expected_salary_max }}">
+    <br>
+    <button type="submit">Search</button>
+</form>
+
+{% if candidates %}
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Age</th>
+            <th>Gender</th>
+            <th>Years of Experience</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th>Current Salary</th>
+            <th>Expected Salary</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for candidate in candidates %}
+        <tr>
+            <td>{{ candidate.name }}</td>
+            <td>{{ candidate.age }}</td>
+            <td>{{ candidate.gender }}</td>
+            <td>{{ candidate.years_of_exp }}</td>
+            <td>{{ candidate.phone_number }}</td>
+            <td>{{ candidate.email }}</td>
+            <td>{{ candidate.current_salary }}</td>
+            <td>{{ candidate.expected_salary }}</td>
+            <td>{{ candidate.status }}</td>
+            <!-- <td>
+                {% if candidate.status == 'Applied' %}
+                <form method="post" action="{% url 'shortlist-candidate' candidate.id %}">
+                    {% csrf_token %}
+                    <button type="submit">Shortlist</button>
+                </form>
+                <form method="post" action="{% url 'reject-candidate' candidate.id %}">
+                    {% csrf_token %}
+                    <button type="submit">Reject</button>
+                </form>
+                {% endif %}
+            </td> -->
+            <td>
+                {% if candidate.status == 'Applied' %}
+                <button class="btn-shortlist" data-id="{{ candidate.id }}">Shortlist</button>
+                <button class="btn-reject" data-id="{{ candidate.id }}">Reject</button>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No candidates found matching the criteria.</p>
+{% endif %}
+
+{% if page_obj %}
+<div class="pagination">
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a href="?page=1">&laquo; first</a>
+            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+        {% endif %}
+    </span>
+</div>
+{% endif %}
+
+
+
+<script>
+$(function() {
+    $("#age-slider").slider({
+        range: true,
+        min: 0,
+        max: 100,
+        values: [20, 40],
+        slide: function(event, ui) {
+            $("#age_min").val(ui.values[0]);
+            $("#age_max").val(ui.values[1]);
+        }
+    });
+
+    $("#age_min").val($("#age-slider").slider("values", 0));
+    $("#age_max").val($("#age-slider").slider("values", 1));
+});
+</script>
+<script>
+    $(function() {
+        var defaultMin = 0; 
+        var defaultMax = 1; 
+        $("#age-slider").slider({
+            range: true,
+            min: 0,
+            max: 100,
+            values: [defaultMin, defaultMax],
+            slide: function(event, ui) {
+                $("#age_min").val(ui.values[0]);
+                $("#age_max").val(ui.values[1]);
+                $("#min-label").text(ui.values[0]);
+                $("#max-label").text(ui.values[1]);
+            },
+            create: function() {
+            // Initialize the values on page load
+            $("#age_min").val(defaultMin);
+            $("#age_max").val(defaultMax);
+            $("#min-label").text(defaultMin);
+            $("#max-label").text(defaultMax);
+        }
+        });
+    });
+</script>
+
+<script>
+    $(document).ready(function() {
+        $('.btn-shortlist').on('click', function() {
+            var candidateId = $(this).data('id');
+            $.ajax({
+                url: '/api/candidates/' + candidateId + '/shortlist/',
+                type: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    $('#status-' + candidateId).text('Shortlisted');
+                    $('.btn-shortlist[data-id="' + candidateId + '"]').hide();
+                    $('.btn-reject[data-id="' + candidateId + '"]').hide();
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error:', error);
+                }
+            });
+        });
+    
+        $('.btn-reject').on('click', function() {
+            var candidateId = $(this).data('id');
+            $.ajax({
+                url: '/api/candidates/' + candidateId + '/reject/',
+                type: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    $('#status-' + candidateId).text('Rejected');
+                    $('.btn-shortlist[data-id="' + candidateId + '"]').hide();
+                    $('.btn-reject[data-id="' + candidateId + '"]').hide();
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error:', error);
+                }
+            });
+        });
+    });
+    </script>
+{% endblock %}
