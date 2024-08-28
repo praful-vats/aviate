@@ -6,7 +6,6 @@ from rest_framework.decorators import api_view
 from rest_framework import generics
 from django.core.paginator import Paginator
 from rest_framework.response import Response
-from rest_framework.views import APIView
 from .models import Candidate
 from .serializers import CandidateSerializer
 from django.db.models import Q
@@ -40,35 +39,6 @@ class CandidateDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Candidate.objects.all()
     serializer_class = CandidateSerializer
 
-# class CandidateSearchView(APIView):
-#     def get(self, request):
-#         name = request.query_params.get('name', None)
-#         email = request.query_params.get('email', None)
-#         phone_number = request.query_params.get('phone_number', None)
-#         age_min = request.query_params.get('age_min', None)
-#         age_max = request.query_params.get('age_max', None)
-#         exp_min = request.query_params.get('exp_min', None)
-#         salary_min = request.query_params.get('salary_min', None)
-#         salary_max = request.query_params.get('salary_max', None)
-
-#         candidates = Candidate.objects.all()
-
-#         if name:
-#             candidates = candidates.filter(name__icontains=name)
-#         if email:
-#             candidates = candidates.filter(email=email)
-#         if phone_number:
-#             candidates = candidates.filter(phone_number=phone_number)
-#         if age_min and age_max:
-#             candidates = candidates.filter(age__gte=age_min, age__lte=age_max)
-#         if exp_min:
-#             candidates = candidates.filter(years_of_exp__gte=exp_min)
-#         if salary_min and salary_max:
-#             candidates = candidates.filter(expected_salary__gte=salary_min, expected_salary__lte=salary_max)
-
-#         serializer = CandidateSerializer(candidates, many=True)
-#         return Response(serializer.data)
-
 @api_view(['GET'])
 def search_candidates(request):
     candidates = Candidate.objects.all()
@@ -91,12 +61,6 @@ def search_candidates(request):
     if expected_salary_max:
         candidates = candidates.filter(expected_salary__lte=expected_salary_max)
         logger.debug(f'Filtered by expected_salary__lte={expected_salary_max}')
-    # if age_min:
-    #     candidates = candidates.filter(age__gte=age_min)
-    #     logger.debug(f'Filtered by age__gte={age_min}')
-    # if age_max:
-    #     candidates = candidates.filter(age__lte=age_max)
-    #     logger.debug(f'Filtered by age__lte={age_max}')
     if age_min and age_max:
         candidates = candidates.filter(age__gte=age_min, age__lte=age_max)
     if years_of_exp_min:
@@ -124,14 +88,6 @@ def search_candidates(request):
 
     return render(request, 'candidates/candidate_list.html', {'candidates': candidates})
 
-# def candidate_list_view(request):
-#     candidates = Candidate.objects.all()
-#     return render(request, 'candidates/candidate_list.html', {'candidates': candidates})
-
-# @cache_page(60 * 15) 
-# def candidate_list_view(request):
-#     candidates = Candidate.objects.all()
-#     return render(request, 'candidates/candidate_list.html', {'candidates': candidates})
 
 @cache_page(60 * 15) 
 def candidate_list_view(request):
@@ -202,7 +158,7 @@ def search_candidates(request):
             Q(email__icontains=search) |
             Q(phone_number__icontains=search)
         )
-    paginator = Paginator(candidates, 10)  # Show 10 candidates per page
+    paginator = Paginator(candidates, 10) 
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -213,11 +169,6 @@ def search_candidates(request):
 def search_form(request):
     return render(request, 'candidates/search_form.html')
 
-
-# def create_candidate(request):
-#     candidate = Candidate.objects.create(...) 
-#     process_candidate_data.delay(candidate.id)
-#     return redirect('candidate-list')
 
 def create_candidate(request):
     if request.method == 'POST':

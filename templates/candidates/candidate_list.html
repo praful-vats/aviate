@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-
+{% load static %} 
 {% block content %}
 <h2>Candidate List</h2>
 
@@ -14,9 +14,7 @@
         font-size: 12px;
         color: #000;
     }
-    </style>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+</style>
 
 <form method="get" action="{% url 'search-candidates' %}">
     <input type="text" name="search" placeholder="Search by name, email, or phone number" value="{{ request.GET.search }}">
@@ -68,18 +66,6 @@
             <td>{{ candidate.current_salary }}</td>
             <td>{{ candidate.expected_salary }}</td>
             <td>{{ candidate.status }}</td>
-            <!-- <td>
-                {% if candidate.status == 'Applied' %}
-                <form method="post" action="{% url 'shortlist-candidate' candidate.id %}">
-                    {% csrf_token %}
-                    <button type="submit">Shortlist</button>
-                </form>
-                <form method="post" action="{% url 'reject-candidate' candidate.id %}">
-                    {% csrf_token %}
-                    <button type="submit">Reject</button>
-                </form>
-                {% endif %}
-            </td> -->
             <td>
                 {% if candidate.status == 'Applied' %}
                 <button class="btn-shortlist" data-id="{{ candidate.id }}">Shortlist</button>
@@ -111,90 +97,7 @@
 <p>No candidates found matching the criteria.</p>
 {% endif %}
 
-
-
-<script>
-$(function() {
-    $("#age-slider").slider({
-        range: true,
-        min: 0,
-        max: 100,
-        values: [20, 40],
-        slide: function(event, ui) {
-            $("#age_min").val(ui.values[0]);
-            $("#age_max").val(ui.values[1]);
-        }
-    });
-
-    $("#age_min").val($("#age-slider").slider("values", 0));
-    $("#age_max").val($("#age-slider").slider("values", 1));
-});
-</script>
-<script>
-    $(function() {
-        var defaultMin = 0; 
-        var defaultMax = 1; 
-        $("#age-slider").slider({
-            range: true,
-            min: 0,
-            max: 100,
-            values: [defaultMin, defaultMax],
-            slide: function(event, ui) {
-                $("#age_min").val(ui.values[0]);
-                $("#age_max").val(ui.values[1]);
-                $("#min-label").text(ui.values[0]);
-                $("#max-label").text(ui.values[1]);
-            },
-            create: function() {
-            // Initialize the values on page load
-            $("#age_min").val(defaultMin);
-            $("#age_max").val(defaultMax);
-            $("#min-label").text(defaultMin);
-            $("#max-label").text(defaultMax);
-        }
-        });
-    });
-</script>
-
-<script>
-    $(document).ready(function() {
-        $('.btn-shortlist').on('click', function() {
-            var candidateId = $(this).data('id');
-            $.ajax({
-                url: '/api/candidates/' + candidateId + '/shortlist/',
-                type: 'POST',
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                success: function(response) {
-                    $('#status-' + candidateId).text('Shortlisted');
-                    $('.btn-shortlist[data-id="' + candidateId + '"]').hide();
-                    $('.btn-reject[data-id="' + candidateId + '"]').hide();
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error:', error);
-                }
-            });
-        });
-    
-        $('.btn-reject').on('click', function() {
-            var candidateId = $(this).data('id');
-            $.ajax({
-                url: '/api/candidates/' + candidateId + '/reject/',
-                type: 'POST',
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                success: function(response) {
-                    $('#status-' + candidateId).text('Rejected');
-                    $('.btn-shortlist[data-id="' + candidateId + '"]').hide();
-                    $('.btn-reject[data-id="' + candidateId + '"]').hide();
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error:', error);
-                }
-            });
-        });
-    });
-    </script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script src="{% static 'js/candidate_list.js' %}"></script>
 {% endblock %}
