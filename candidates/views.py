@@ -202,8 +202,11 @@ def search_candidates(request):
             Q(email__icontains=search) |
             Q(phone_number__icontains=search)
         )
+    paginator = Paginator(candidates, 10)  # Show 10 candidates per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
-    return render(request, 'candidates/candidate_list.html', {'candidates': candidates})
+    return render(request, 'candidates/candidate_list.html', {'page_obj': page_obj})
 
 
 

@@ -40,7 +40,7 @@
     <button type="submit">Search</button>
 </form>
 
-{% if candidates %}
+{% if page_obj %}
 <table>
     <thead>
         <tr>
@@ -57,7 +57,7 @@
         </tr>
     </thead>
     <tbody>
-        {% for candidate in candidates %}
+        {% for candidate in page_obj %}
         <tr>
             <td>{{ candidate.name }}</td>
             <td>{{ candidate.age }}</td>
@@ -90,11 +90,6 @@
         {% endfor %}
     </tbody>
 </table>
-{% else %}
-<p>No candidates found matching the criteria.</p>
-{% endif %}
-
-{% if page_obj %}
 <div class="pagination">
     <span class="step-links">
         {% if page_obj.has_previous %}
@@ -112,6 +107,8 @@
         {% endif %}
     </span>
 </div>
+{% else %}
+<p>No candidates found matching the criteria.</p>
 {% endif %}
 
 
