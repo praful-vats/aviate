@@ -1,6 +1,5 @@
 from django.db import models
-
-# Create your models here.
+from django.core.exceptions import ValidationError
 
 class Candidate(models.Model):
     STATUS_CHOICES = [
@@ -28,3 +27,15 @@ class Candidate(models.Model):
 
     def __str__(self):
         return self.name
+
+    def clean(self):
+        if self.expected_salary < self.current_salary:
+            raise ValidationError('Expected salary cannot be less than current salary.')
+        if self.age < 18 or self.age > 120:
+            raise ValidationError('Age must be between 18 and 120.')
+        if self.years_of_exp < 0:
+            raise ValidationError('Years of experience cannot be negative.')
+
+    def save(self, *args, **kwargs):
+        self.clean() 
+        super().save(*args, **kwargs)

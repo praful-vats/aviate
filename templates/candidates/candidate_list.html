@@ -5,35 +5,54 @@
 
 <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 <style>
-    .slider-labels {
-        display: flex;
-        justify-content: space-between;
-        margin: 10px 0;
-    }
-    .slider-label {
-        font-size: 12px;
-        color: #000;
-    }
+.slider-container {
+    width: 20%;
+    /* margin: 0 auto; */
+}
+
+.slider-labels {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0;
+}
+
+.slider-label {
+    font-size: 12px;
+    color: #000;
+}
+
+#age-slider {
+    height: 8px; 
+    width: 100%;
+}
+
+.ui-slider-handle {
+    width: 14px; 
+    height: 14px; 
+    background-color: #337ab7;
+    border-radius: 50%;
+}
+ 
 </style>
 
-<form method="get" action="{% url 'search-candidates' %}">
+<form id="search-form"  action="{% url 'search-candidates' %}">
     <input type="text" name="search" placeholder="Search by name, email, or phone number" value="{{ request.GET.search }}">
     <br>
     <br>
-    <input type="text" name="name" placeholder="Name" value="{{ request.GET.name }}">
-    <input type="text" name="email" placeholder="Email" value="{{ request.GET.email }}">
-    <input type="text" name="phone_number" placeholder="Phone Number" value="{{ request.GET.phone_number }}">
-    <br>
-    <div id="age-slider"></div>
-    <input type="hidden" id="age_min" name="age_min">
-    <input type="hidden" id="age_max" name="age_max">
-    <div class="slider-labels">
-        <span class="slider-label" id="min-label">0</span>
-        <span class="slider-label" id="max-label">1</span>
-    </div>
+    <a>AGE</a>
+    <div class="slider-container">
+        <div id="age-slider"></div>
+        <div class="slider-labels">
+            <span class="slider-label" id="min-label">0</span>
+            <span class="slider-label" id="max-label">100</span>
+        </div>
+        <input type="hidden" id="age_min" name="age_min" value="{{ request.GET.age_min }}">
+        <input type="hidden" id="age_max" name="age_max" value="{{ request.GET.age_max }}">
+    </div>    
     <input type="number" name="years_of_exp_min" placeholder="Min Years of Experience" value="{{ request.GET.years_of_exp_min }}">
-    <input type="number" name="expected_salary_min" placeholder="Min Salary" value="{{ request.GET.expected_salary_min }}">
-    <input type="number" name="expected_salary_max" placeholder="Max Salary" value="{{ request.GET.expected_salary_max }}">
+    <input type="number" id="expected_salary_min" name="expected_salary_min" placeholder="Current Salary" value="{{ request.GET.expected_salary_min }}">
+    <input type="number" id="expected_salary_max" name="expected_salary_max" placeholder="Expected Salary" value="{{ request.GET.expected_salary_max }}">
+    <br>
     <br>
     <button type="submit">Search</button>
 </form>

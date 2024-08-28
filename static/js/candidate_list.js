@@ -1,27 +1,12 @@
-$(function() {
+$(document).ready(function() {
+    // Initialize the Age Slider
+    var defaultMin = 0;
+    var defaultMax = 100;
     $("#age-slider").slider({
         range: true,
-        min: 0,
-        max: 100,
-        values: [20, 40],
-        slide: function(event, ui) {
-            $("#age_min").val(ui.values[0]);
-            $("#age_max").val(ui.values[1]);
-        }
-    });
-
-    $("#age_min").val($("#age-slider").slider("values", 0));
-    $("#age_max").val($("#age-slider").slider("values", 1));
-});
-
-$(function() {
-    var defaultMin = 0; 
-    var defaultMax = 1; 
-    $("#age-slider").slider({
-        range: true,
-        min: 0,
-        max: 100,
-        values: [defaultMin, defaultMax],
+        min: defaultMin,
+        max: defaultMax,
+        values: [0, 100],
         slide: function(event, ui) {
             $("#age_min").val(ui.values[0]);
             $("#age_max").val(ui.values[1]);
@@ -29,23 +14,40 @@ $(function() {
             $("#max-label").text(ui.values[1]);
         },
         create: function() {
-            // Initialize the values on page load
-            $("#age_min").val(defaultMin);
-            $("#age_max").val(defaultMax);
-            $("#min-label").text(defaultMin);
-            $("#max-label").text(defaultMax);
+            $("#age_min").val($("#age-slider").slider("values", 0));
+            $("#age_max").val($("#age-slider").slider("values", 1));
+            $("#min-label").text($("#age-slider").slider("values", 0));
+            $("#max-label").text($("#age-slider").slider("values", 1));
         }
     });
-});
 
-$(document).ready(function() {
+    // Handle form submission via AJAX
+    $('#search-form').on('submit', function(event) {
+        event.preventDefault();
+
+        $.ajax({
+            url: $(this).attr('action'),
+            type: 'GET',
+            data: $(this).serialize(),
+            success: function(data) {
+                // Replace the table content with the new results
+                $('table tbody').html($(data).find('table tbody').html());
+                $('.pagination').html($(data).find('.pagination').html());
+            },
+            error: function(xhr, status, error) {
+                console.error('Error:', error);
+            }
+        });
+    });
+
+    // Shortlist and Reject AJAX Calls
     $('.btn-shortlist').on('click', function() {
         var candidateId = $(this).data('id');
         $.ajax({
-            url: '/api/candidates/' + candidateId + '/shortlist/',
+            url: '/api/status/' + candidateId + '/shortlist/',
             type: 'POST',
             headers: {
-                'X-CSRFToken': '{{ csrf_token }}'
+                'X-CSRFToken': getCookie('csrftoken')
             },
             success: function(response) {
                 $('#status-' + candidateId).text('Shortlisted');
@@ -61,10 +63,10 @@ $(document).ready(function() {
     $('.btn-reject').on('click', function() {
         var candidateId = $(this).data('id');
         $.ajax({
-            url: '/api/candidates/' + candidateId + '/reject/',
+            url: '/api/status/' + candidateId + '/reject/',
             type: 'POST',
             headers: {
-                'X-CSRFToken': '{{ csrf_token }}'
+                'X-CSRFToken': getCookie('csrftoken')
             },
             success: function(response) {
                 $('#status-' + candidateId).text('Rejected');
@@ -76,4 +78,19 @@ $(document).ready(function() {
             }
         });
     });
+
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
 });

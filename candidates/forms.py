@@ -1,5 +1,6 @@
 from django import forms
 from .models import Candidate
+import re
 
 class CandidateForm(forms.ModelForm):
     class Meta:
@@ -36,3 +37,15 @@ class CandidateForm(forms.ModelForm):
             'current_salary': 'Enter the current salary in numeric value.',
             'expected_salary': 'Enter the expected salary in numeric value.',
         }
+
+    def clean_phone_number(self):
+        phone_number = self.cleaned_data.get('phone_number')
+        if not re.match(r'^\+?\d{10,15}$', phone_number):
+            raise forms.ValidationError('Enter a valid phone number.')
+        return phone_number
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if not re.match(r'^[\w.\-]+@[\w.\-]+\.[a-zA-Z]{2,}$', email):
+            raise forms.ValidationError('Enter a valid email address.')
+        return email
