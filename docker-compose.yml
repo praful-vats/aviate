@@ -8,6 +8,7 @@ services:
     command: gunicorn --bind 0.0.0.0:8000 ats_project.wsgi:application
     volumes:
       - .:/app
+      - ./staticfiles:/app/staticfiles
     env_file:
       - .env
     expose:
@@ -21,3 +22,5 @@ services:
       - "80:80"
     depends_on:
       - django_app
+    volumes:
+      - ./staticfiles:/app/staticfiles
