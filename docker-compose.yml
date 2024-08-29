@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  django_app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: gunicorn --bind 0.0.0.0:8000 ats_project.wsgi:application
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    expose:
+      - "8000"
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - django_app
