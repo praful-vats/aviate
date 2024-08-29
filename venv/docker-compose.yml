@@ -1,0 +1,32 @@
+version: '3'
+
+services:
+  django_app:
+    build:
+      context: ./venv
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+    environment:
+      - DEBUG=False
+      - DJANGO_SETTINGS_MODULE=ats_project.settings
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
+      - REDIS_CACHE_URL=${REDIS_CACHE_URL}
+    command: gunicorn --bind 0.0.0.0:8000 ats_project.wsgi:application
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    volumes:
+      - ./static:/ats_project/static
+    depends_on:
+      - django_app
