@@ -12,3 +12,4 @@ class CandidateFilter(django_filters.FilterSet):
     class Meta:
         model = Candidate
         fields = ['expected_salary', 'age', 'years_of_exp', 'phone_number', 'email', 'name']
+        order_by = None
